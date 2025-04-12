@@ -1,54 +1,59 @@
-# React + TypeScript + Vite
+# Convex Hull Calculator
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+An interactive application that calculates the convex hull of a set of points on a plane. Built with React, TypeScript, and Vite, with a clean UI powered by shadcn/ui.
 
-Currently, two official plugins are available:
+## About the Project
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react/README.md) uses [Babel](https://babeljs.io/) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+This application solves the following task:
 
-## Expanding the ESLint configuration
+### Convex Hull of a Set of Points
+The program determines the convex hull of points on a plane and:
+- Identifies what type of shape the convex hull is (polygon, quadrilateral, triangle, line segment, or point)
+- Displays the coordinates of consecutive vertices of the convex hull
 
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
+**Input data:** Coordinates of points on a plane.
 
-```js
-export default tseslint.config({
-  extends: [
-    // Remove ...tseslint.configs.recommended and replace with this
-    ...tseslint.configs.recommendedTypeChecked,
-    // Alternatively, use this for stricter rules
-    ...tseslint.configs.strictTypeChecked,
-    // Optionally, add this for stylistic rules
-    ...tseslint.configs.stylisticTypeChecked,
-  ],
-  languageOptions: {
-    // other options...
-    parserOptions: {
-      project: ['./tsconfig.node.json', './tsconfig.app.json'],
-      tsconfigRootDir: import.meta.dirname,
-    },
-  },
-})
-```
+## Features
 
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
+- Real-time convex hull calculation and visualization
+- Clear identification of the resulting geometric shape
+- Responsive design that works across devices
 
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
+## Technologies Used
 
-export default tseslint.config({
-  plugins: {
-    // Add the react-x and react-dom plugins
-    'react-x': reactX,
-    'react-dom': reactDom,
-  },
-  rules: {
-    // other rules...
-    // Enable its recommended typescript rules
-    ...reactX.configs['recommended-typescript'].rules,
-    ...reactDom.configs.recommended.rules,
-  },
-})
-```
+- **Frontend Framework:** React
+- **Language:** TypeScript
+- **Build Tool:** Vite
+- **UI Components:** shadcn/ui
+- **Styling:** Tailwind CSS
+
+## Getting Started
+
+### Prerequisites
+
+- Node.js (version 16 or higher)
+- npm
+
+### Installation
+
+1. Clone the repository:
+   ```bash
+   git clone https://github.com/PlanujHajs/otoczka.git
+   ```
+
+2. Navigate to the project directory:
+    ```bash
+    cd otoczka
+    ```
+
+3. Install dependencies:
+    ```bash
+    npm install
+    ```
+
+4. Run application:
+    ```bash
+    npm run dev
+    ```
+
+The application will be available at `http://localhost:5173`.
