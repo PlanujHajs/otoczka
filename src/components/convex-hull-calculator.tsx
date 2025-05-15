@@ -184,7 +184,7 @@ export function ConvexHullCalculator() {
     ctx.lineTo(310, 480);
     ctx.stroke();
 
-    // Jestli nie ma współrzędnych punktów, to nic nie rysujemy
+    // Jeżeli nie ma punktów, to nic nie rysujemy
     if (points.length === 0) return;
 
     // Rysowanie punktów
