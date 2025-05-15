@@ -1,160 +1,160 @@
-"use client"
+"use client";
 
-import { useState, useEffect, useRef } from "react"
-import { Card, CardContent } from "./ui/card"
-import { Button } from "./ui/button"
-import { Input } from "./ui/input"
-import { Label } from "./ui/label"
-import { AlertCircle, Trash2, Edit2, Plus } from "lucide-react"
-import { Alert, AlertDescription } from "./ui/alert"
+import { useState, useEffect, useRef } from "react";
+import { Card, CardContent } from "./ui/card";
+import { Button } from "./ui/button";
+import { Input } from "./ui/input";
+import { Label } from "./ui/label";
+import { AlertCircle, Trash2, Edit2, Plus } from "lucide-react";
+import { Alert, AlertDescription } from "./ui/alert";
 
 interface Point {
-  id: string
-  x: number
-  y: number
+  id: string;
+  x: number;
+  y: number;
 }
 
 export function ConvexHullCalculator() {
-  const [points, setPoints] = useState<Point[]>([])
-  const [newX, setNewX] = useState<string>("")
-  const [newY, setNewY] = useState<string>("")
-  const [editingPoint, setEditingPoint] = useState<string | null>(null)
-  const [error, setError] = useState<string | null>(null)
-  const [hullPoints, setHullPoints] = useState<Point[]>([])
-  const [hullType, setHullType] = useState<string>("")
-  const canvasRef = useRef<HTMLCanvasElement>(null)
+  const [points, setPoints] = useState<Point[]>([]);
+  const [newX, setNewX] = useState<string>("");
+  const [newY, setNewY] = useState<string>("");
+  const [editingPoint, setEditingPoint] = useState<string | null>(null);
+  const [error, setError] = useState<string | null>(null);
+  const [hullPoints, setHullPoints] = useState<Point[]>([]);
+  const [hullType, setHullType] = useState<string>("");
+  const canvasRef = useRef<HTMLCanvasElement>(null);
 
   // Obliczanie otoczki przy każdej zmianie punktów
   useEffect(() => {
     if (points.length > 0) {
-      const hull = calculateConvexHull(points)
-      setHullPoints(hull)
-      determineHullType(hull)
+      const hull = calculateConvexHull(points);
+      setHullPoints(hull);
+      determineHullType(hull);
     } else {
-      setHullPoints([])
-      setHullType("")
+      setHullPoints([]);
+      setHullType("");
     }
-  }, [points])
+  }, [points]);
 
   // Odśwież canvas po każdej zmianie punktów i otoczki
   useEffect(() => {
-    drawCanvas()
-  }, [points, hullPoints])
+    drawCanvas();
+  }, [points, hullPoints]);
 
   // Obsługa zmiany rozmiaru okna dla responsywnego canvasu
   useEffect(() => {
     const handleResize = () => {
-      drawCanvas()
-    }
+      drawCanvas();
+    };
 
-    window.addEventListener("resize", handleResize)
+    window.addEventListener("resize", handleResize);
     return () => {
-      window.removeEventListener("resize", handleResize)
-    }
-  }, [points, hullPoints])
+      window.removeEventListener("resize", handleResize);
+    };
+  }, [points, hullPoints]);
 
-  const validPoint = (newX: string, newY: string): null|Point => {
+  const validPoint = (newX: string, newY: string): null | Point => {
     if (!newX.trim() || !newY.trim()) {
-      setError("Wymagane są obie współrzędne X i Y")
-      return null
+      setError("Wymagane są obie współrzędne X i Y");
+      return null;
     }
 
-    const x = Number.parseFloat(newX)
-    const y = Number.parseFloat(newY)
+    const x = Number.parseFloat(newX);
+    const y = Number.parseFloat(newY);
 
     if (isNaN(x) || isNaN(y)) {
-      setError("Współrzędne muszą być prawidłowymi liczbami")
-      return null
+      setError("Współrzędne muszą być prawidłowymi liczbami");
+      return null;
     }
 
     return {
       id: Date.now().toString(),
       x,
       y,
-    }
-  }
+    };
+  };
 
   const addPoint = () => {
-    const newPoint = validPoint(newX, newY)
-    if (!newPoint) return
+    const newPoint = validPoint(newX, newY);
+    if (!newPoint) return;
 
-    setPoints([...points, newPoint])
-    setNewX("")
-    setNewY("")
-    setError(null)
-  }
+    setPoints([...points, newPoint]);
+    setNewX("");
+    setNewY("");
+    setError(null);
+  };
 
   const startEditing = (point: Point) => {
-    setEditingPoint(point.id)
-    setNewX(point.x.toString())
-    setNewY(point.y.toString())
-  }
+    setEditingPoint(point.id);
+    setNewX(point.x.toString());
+    setNewY(point.y.toString());
+  };
 
   const saveEdit = () => {
-    if (!editingPoint) return
+    if (!editingPoint) return;
 
-    const newPoint = validPoint(newX, newY)
-    if (!newPoint) return
+    const newPoint = validPoint(newX, newY);
+    if (!newPoint) return;
 
-    const x = newPoint.x
-    const y = newPoint.y
+    const x = newPoint.x;
+    const y = newPoint.y;
 
-    setPoints(points.map((p) => (p.id === editingPoint ? { ...p, x, y } : p)))
+    setPoints(points.map((p) => (p.id === editingPoint ? { ...p, x, y } : p)));
 
-    setEditingPoint(null)
-    setNewX("")
-    setNewY("")
-    setError(null)
-  }
+    setEditingPoint(null);
+    setNewX("");
+    setNewY("");
+    setError(null);
+  };
 
   const cancelEdit = () => {
-    setEditingPoint(null)
-    setNewX("")
-    setNewY("")
-    setError(null)
-  }
+    setEditingPoint(null);
+    setNewX("");
+    setNewY("");
+    setError(null);
+  };
 
   const deletePoint = (id: string) => {
-    setPoints(points.filter((p) => p.id !== id))
-  }
+    setPoints(points.filter((p) => p.id !== id));
+  };
 
   const drawCanvas = () => {
-    const canvas = canvasRef.current
-    if (!canvas) return
+    const canvas = canvasRef.current;
+    if (!canvas) return;
 
-    const ctx = canvas.getContext("2d")
-    if (!ctx) return
+    const ctx = canvas.getContext("2d");
+    if (!ctx) return;
 
     // Responsywność canvasu
-    const container = canvas.parentElement
+    const container = canvas.parentElement;
     if (container) {
-      canvas.width = container.clientWidth
-      canvas.height = Math.min(400, window.innerHeight * 0.5)
+      canvas.width = container.clientWidth;
+      canvas.height = Math.min(400, window.innerHeight * 0.5);
     }
 
     // Czyszczenie canvasu
-    ctx.clearRect(0, 0, canvas.width, canvas.height)
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
 
     // Jestli nie ma współrzędnych punktów, to nic nie rysujemy
-    if (points.length === 0) return
+    if (points.length === 0) return;
 
     // TODO: Rysowanie punktów
-    ctx.fillStyle = "#6366F1"
+    ctx.fillStyle = "#6366F1";
     points.forEach((point) => {
-      ctx.beginPath()
-      ctx.arc(point.x, point.y, 5, 0, 2 * Math.PI)
-      ctx.fill()
-    })
-  }
+      ctx.beginPath();
+      ctx.arc(point.x, point.y, 5, 0, 2 * Math.PI);
+      ctx.fill();
+    });
+  };
 
   const calculateConvexHull = (points: Point[]): Point[] => {
-    if (points.length <= 2) return points
+    if (points.length <= 2) return points;
 
     // TODO: Algorytm Grahama dla wyszukania otoczki
 
     // return hullPoints
-    return points
-  }
+    return points;
+  };
 
   const determineHullType = (hull: Point[]) => {
     const hullTypes = {
@@ -162,14 +162,14 @@ export function ConvexHullCalculator() {
       1: "Punkt",
       2: "Odcinek",
       3: "Trójkąt",
-      4: "Czworokąt"
+      4: "Czworokąt",
     };
 
     setHullType(
       hullTypes[hull.length as keyof typeof hullTypes] ||
-      `Wielokąt (${hull.length} wierzchołków)`
+        `Wielokąt (${hull.length} wierzchołków)`
     );
-  }
+  };
 
   return (
     <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
@@ -215,7 +215,11 @@ export function ConvexHullCalculator() {
                 <Button onClick={saveEdit} className="flex-1">
                   Zapisz zmiany
                 </Button>
-                <Button variant="outline" onClick={cancelEdit} className="flex-1">
+                <Button
+                  variant="outline"
+                  onClick={cancelEdit}
+                  className="flex-1"
+                >
                   Anuluj
                 </Button>
               </div>
@@ -229,7 +233,9 @@ export function ConvexHullCalculator() {
           <div className="mt-6">
             <h3 className="text-lg font-medium mb-2">Lista punktów</h3>
             {points.length === 0 ? (
-              <p className="text-gray-500 text-center py-4">Nie dodano jeszcze żadnych punktów</p>
+              <p className="text-gray-500 text-center py-4">
+                Nie dodano jeszcze żadnych punktów
+              </p>
             ) : (
               <div className="max-h-[300px] overflow-y-auto">
                 <table className="w-full border-collapse">
@@ -279,14 +285,22 @@ export function ConvexHullCalculator() {
         <CardContent className="p-6">
           <h2 className="text-xl font-semibold mb-4">Wizualizacja</h2>
           <div className="border rounded-md bg-white">
-            <canvas ref={canvasRef} className="w-full" style={{ minHeight: "300px" }}></canvas>
+            <canvas
+              ref={canvasRef}
+              className="w-full"
+              style={{ minHeight: "300px" }}
+            ></canvas>
           </div>
 
           <div className="mt-6">
-            <h3 className="text-lg font-medium mb-2">Wyniki otoczki wypukłej</h3>
+            <h3 className="text-lg font-medium mb-2">
+              Wyniki otoczki wypukłej
+            </h3>
 
             {points.length === 0 ? (
-              <p className="text-gray-500 text-center py-4">Dodaj punkty, aby obliczyć otoczkę wypukłą</p>
+              <p className="text-gray-500 text-center py-4">
+                Dodaj punkty, aby obliczyć otoczkę wypukłą
+              </p>
             ) : (
               <>
                 <div className="mb-4">
@@ -322,5 +336,5 @@ export function ConvexHullCalculator() {
         </CardContent>
       </Card>
     </div>
-  )
+  );
 }
