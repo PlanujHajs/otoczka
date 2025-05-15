@@ -128,32 +128,145 @@ export function ConvexHullCalculator() {
     // Responsywność canvasu
     const container = canvas.parentElement;
     if (container) {
-      canvas.width = container.clientWidth;
-      canvas.height = Math.min(400, window.innerHeight * 0.5);
+      canvas.width = 600;
+      canvas.height = 600;
     }
 
-    // Czyszczenie canvasu
+    // Tutaj sobie rysujemy na canvasie siatkę XY
     ctx.clearRect(0, 0, canvas.width, canvas.height);
+    ctx.strokeStyle = "#e0e0e0";
+    ctx.lineWidth = 1;
+    ctx.beginPath();
+    for (let i = 0; i <= canvas.width; i += 20) {
+      ctx.moveTo(i, 0);
+      ctx.lineTo(i, canvas.height);
+    }
+    for (let i = 0; i <= canvas.height; i += 20) {
+      ctx.moveTo(0, i);
+      ctx.lineTo(canvas.width, i);
+    }
+    ctx.stroke();
+    ctx.strokeStyle = "#000000";
+    ctx.lineWidth = 2;
+    ctx.beginPath();
+    ctx.moveTo(0, canvas.height / 2);
+    ctx.lineTo(canvas.width, canvas.height / 2);
+    ctx.moveTo(canvas.width / 2, 0);
+    ctx.lineTo(canvas.width / 2, canvas.height);
+    ctx.stroke();
+    ctx.fillStyle = "#000000";
+    ctx.font = "12px Arial";
+    ctx.fillText("X", canvas.width - 20, canvas.height / 2 + 15);
+    ctx.fillText("Y", canvas.width / 2 + 5, 20);
+    ctx.fillText("0", canvas.width / 2 + 5, canvas.height / 2 + 15);
+
+    // A tutaj na siatce pozycje -200 i 200 dla X i Y
+    ctx.fillStyle = "#000000";
+    ctx.fillText("-200", 85, 325);
+    ctx.fillText("200", 485, 325);
+    ctx.fillText("200", 315, 124);
+    ctx.fillText("-200", 315, 484);
+
+    // A tutaj są linie pomocnicze do 200, -200 dla X i Y
+    ctx.strokeStyle = "#000000";
+    ctx.lineWidth = 1;
+    ctx.beginPath();
+    ctx.moveTo(100, 300);
+    ctx.lineTo(100, 310);
+
+    ctx.moveTo(500, 300);
+    ctx.lineTo(500, 310);
+
+    ctx.moveTo(300, 120);
+    ctx.lineTo(310, 120);
+
+    ctx.moveTo(300, 480);
+    ctx.lineTo(310, 480);
+    ctx.stroke();
 
     // Jestli nie ma współrzędnych punktów, to nic nie rysujemy
     if (points.length === 0) return;
 
-    // TODO: Rysowanie punktów
-    ctx.fillStyle = "#6366F1";
+    // Rysowanie punktów
+    const hullPointColor = "#6366F1";
+    const nonHullPointColor = "#ff0000";
     points.forEach((point) => {
+      // Rysujemy punkciki czerwone jak są wewnętrzne, a fioletowe jak są na otoczce
+      ctx.fillStyle = hullPoints.some((p) => p.x === point.x && p.y === point.y)
+        ? hullPointColor
+        : nonHullPointColor;
+
       ctx.beginPath();
-      ctx.arc(point.x, point.y, 5, 0, 2 * Math.PI);
+      ctx.arc(point.x + 300, point.y * -1 + 300, 5, 0, 2 * Math.PI);
       ctx.fill();
     });
+
+    // A tutaj rysowanie otoczki wypukłej
+    if (hullPoints.length > 1) {
+      ctx.strokeStyle = "rgba(99, 102, 241, 0.8)";
+      ctx.lineWidth = 2;
+      ctx.beginPath();
+      ctx.moveTo(hullPoints[0].x + 300, hullPoints[0].y * -1 + 300);
+      hullPoints.forEach((point) => {
+        ctx.lineTo(point.x + 300, point.y * -1 + 300);
+      });
+      ctx.closePath();
+      ctx.stroke();
+    }
   };
 
   const calculateConvexHull = (points: Point[]): Point[] => {
     if (points.length <= 2) return points;
 
-    // TODO: Algorytm Grahama dla wyszukania otoczki
+    // Step 1: Sortowanie punktów na osi X oraz Y jak jest równa X
+    const sortedPoints = [...points].sort((a, b) =>
+      a.x === b.x ? a.y - b.y : a.x - b.x
+    );
 
-    // return hullPoints
-    return points;
+    // Step 2: Budujemy donly hull
+    const lowerHull: Point[] = [];
+    for (const point of sortedPoints) {
+      while (
+        lowerHull.length >= 2 &&
+        crossProduct(
+          lowerHull[lowerHull.length - 2],
+          lowerHull[lowerHull.length - 1],
+          point
+        ) <= 0
+      ) {
+        lowerHull.pop();
+      }
+      lowerHull.push(point);
+    }
+
+    // Step 3: Budujemy górny hull
+    const upperHull: Point[] = [];
+    for (let i = sortedPoints.length - 1; i >= 0; i--) {
+      const point = sortedPoints[i];
+      while (
+        upperHull.length >= 2 &&
+        crossProduct(
+          upperHull[upperHull.length - 2],
+          upperHull[upperHull.length - 1],
+          point
+        ) <= 0
+      ) {
+        upperHull.pop();
+      }
+      upperHull.push(point);
+    }
+
+    // Step 4: Kasujemy duplikat punktu (ostatni punkt się duplikuje)
+    upperHull.pop();
+    lowerHull.pop();
+
+    // Step 5: i końcowo łączymy dolny i górny hull i mamy convexHull
+    return lowerHull.concat(upperHull);
+  };
+
+  // Funkcja do obliczania iloczynu wektorowego między trzema punktami
+  const crossProduct = (p1: Point, p2: Point, p3: Point): number => {
+    return (p2.x - p1.x) * (p3.y - p1.y) - (p2.y - p1.y) * (p3.x - p1.x);
   };
 
   const determineHullType = (hull: Point[]) => {
@@ -187,24 +300,62 @@ export function ConvexHullCalculator() {
           <div className="flex flex-col space-y-4">
             <div className="grid grid-cols-2 gap-4">
               <div>
-                <Label htmlFor="x-coordinate">Współrzędna X</Label>
+                <Label htmlFor="x-coordinate">
+                  Współrzędna X (od -300 do 300)
+                </Label>
                 <Input
                   id="x-coordinate"
                   type="number"
                   step="any"
                   value={newX}
-                  onChange={(e) => setNewX(e.target.value)}
+                  onChange={(e) => {
+                    // walidacja X dla -300 i 300
+                    // Jak nie ma minusa to max 3 znaki
+                    if (e.target.value.length > 3 && e.target.value[0] !== "-")
+                      return;
+                    // Jak jest minus to max 4 znaki
+                    if (e.target.value.length > 4 && e.target.value[0] === "-")
+                      return;
+                    setError(null);
+                    if (e.target.value.length > 0) {
+                      const x = Number.parseFloat(e.target.value);
+                      if (x < -300 || x > 300) {
+                        setError(
+                          "Współrzędna X musi być w zakresie -300 do 300"
+                        );
+                      }
+                    }
+                    return setNewX(e.target.value);
+                  }}
                   placeholder="X"
                 />
               </div>
               <div>
-                <Label htmlFor="y-coordinate">Współrzędna Y</Label>
+                <Label htmlFor="y-coordinate">
+                  Współrzędna Y (od -300 do 300)
+                </Label>
                 <Input
                   id="y-coordinate"
                   type="number"
                   step="any"
                   value={newY}
-                  onChange={(e) => setNewY(e.target.value)}
+                  onChange={(e) => {
+                    // ta sama walidacja co wyżej
+                    if (e.target.value.length > 3 && e.target.value[0] !== "-")
+                      return;
+                    if (e.target.value.length > 4 && e.target.value[0] === "-")
+                      return;
+                    setError(null);
+                    if (e.target.value.length > 0) {
+                      const y = Number.parseFloat(e.target.value);
+                      if (y < -300 || y > 300) {
+                        setError(
+                          "Współrzędna Y musi być w zakresie -300 do 300"
+                        );
+                      }
+                    }
+                    return setNewY(e.target.value);
+                  }}
                   placeholder="Y"
                 />
               </div>
@@ -212,7 +363,11 @@ export function ConvexHullCalculator() {
 
             {editingPoint ? (
               <div className="flex space-x-2">
-                <Button onClick={saveEdit} className="flex-1">
+                <Button
+                  onClick={saveEdit}
+                  disabled={!!error}
+                  className="flex-1"
+                >
                   Zapisz zmiany
                 </Button>
                 <Button
@@ -224,7 +379,7 @@ export function ConvexHullCalculator() {
                 </Button>
               </div>
             ) : (
-              <Button onClick={addPoint} className="w-full">
+              <Button disabled={!!error} onClick={addPoint} className="w-full">
                 <Plus className="mr-2 h-4 w-4" /> Dodaj punkt
               </Button>
             )}
@@ -287,8 +442,8 @@ export function ConvexHullCalculator() {
           <div className="border rounded-md bg-white">
             <canvas
               ref={canvasRef}
-              className="w-full"
-              style={{ minHeight: "300px" }}
+              style={{ minHeight: "150px", minWidth: "150px" }}
+              className="w-full h-full"
             ></canvas>
           </div>
 
