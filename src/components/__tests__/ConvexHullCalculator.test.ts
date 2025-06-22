@@ -127,7 +127,7 @@ describe("calculateConvexHull – duplikaty i floaty", () => {
 });
 
 describe("calculateConvexHull – kształt wklęsły (U-shape)", () => {
-  it("nie bierze punków wwklęsłych do obwiedni", () => {
+  it("nie bierze punków wklęsłych do obwiedni", () => {
     const U: Point[] = [
       { id: "A", x: 0, y: 0 },
       { id: "B", x: 2, y: 0 },

@@ -407,7 +407,6 @@ export function ConvexHullCalculator() {
 
   /**
    * Określa typ otoczki wypukłej na podstawie liczby wierzchołków
-   … (kontynuacja kodu bez zmian) …
    */
   const determineHullType = (hull: Point[]) => {
     const hullTypes = {
